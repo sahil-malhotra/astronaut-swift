@@ -5,25 +5,21 @@ import UIKit
 #endif
 
 public struct AstronautConfiguration {
-    public let baseURL: URL
+    /// Fixed astronaut.sh ingest endpoint — same for every app, so it's not a
+    /// caller-supplied option. (The apex astronaut.sh 308-redirects to www.)
+    static let baseURL = URL(string: "https://www.astronaut.sh")!
+
+    /// Public app identifier (trk_...) from the astronaut.sh dashboard. Required:
+    /// it's how the backend attributes your events to your app.
+    public let trackingId: String
+
     /// When nil, derived from build: `debug` in DEBUG, otherwise `release`.
     public let releaseEnvironment: String?
 
-    /// Public app identifier (trk_...) from the astronaut.sh dashboard. Sent with
-    /// every event so the backend attributes data to this app.
-    public let trackingId: String?
-
-    public init(baseURL: URL, trackingId: String? = nil, releaseEnvironment: String? = nil) {
-        self.baseURL = baseURL
+    public init(trackingId: String, releaseEnvironment: String? = nil) {
         self.trackingId = trackingId
         self.releaseEnvironment = releaseEnvironment
     }
-
-    public static let production = AstronautConfiguration(
-        // Canonical domain — the apex astronaut.sh 308-redirects here.
-        baseURL: URL(string: "https://www.astronaut.sh")!,
-        trackingId: "trk_1c4deffa9408427985d893d07041d620"
-    )
 }
 
 public final class Astronaut {
@@ -163,11 +159,8 @@ public final class Astronaut {
             "apns_token": apnsToken,
             "apns_environment": apnsEnvironment,
             "permission_status": permissionStatus,
+            "tracking_id": configuration.trackingId,
         ]
-
-        if let trackingId = configuration.trackingId, !trackingId.isEmpty {
-            payload["tracking_id"] = trackingId
-        }
 
         if let appUserId, !appUserId.isEmpty {
             payload["app_user_id"] = appUserId
@@ -177,7 +170,9 @@ public final class Astronaut {
             return
         }
 
-        var request = URLRequest(url: configuration.baseURL.appendingPathComponent("/api/push-tokens"))
+        var request = URLRequest(
+            url: AstronautConfiguration.baseURL.appendingPathComponent("/api/push-tokens")
+        )
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = body
@@ -203,6 +198,7 @@ public final class Astronaut {
             "event_type": normalizedEventType,
             "device_id": deviceId,
             "metadata": metadata,
+            "tracking_id": configuration.trackingId,
         ]
 
         if let region = Locale.current.region?.identifier, !region.isEmpty {
@@ -210,10 +206,6 @@ public final class Astronaut {
         }
 
         payload["timezone"] = TimeZone.current.identifier
-
-        if let trackingId = configuration.trackingId, !trackingId.isEmpty {
-            payload["tracking_id"] = trackingId
-        }
 
         let releaseEnvironment: String
         if let custom = configuration.releaseEnvironment, !custom.isEmpty {
@@ -255,7 +247,9 @@ public final class Astronaut {
             return
         }
 
-        var request = URLRequest(url: configuration.baseURL.appendingPathComponent("/api/events"))
+        var request = URLRequest(
+            url: AstronautConfiguration.baseURL.appendingPathComponent("/api/events")
+        )
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = body
