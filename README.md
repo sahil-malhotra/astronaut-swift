@@ -48,5 +48,5 @@ func application(_ application: UIApplication,
 
 ## Requirements
 
-- iOS 15+
+- iOS 16+
 - Swift 5.9+
