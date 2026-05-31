@@ -2,19 +2,19 @@
 import PackageDescription
 
 let package = Package(
-    name: "MobileAnalytics",
+    name: "Astronaut",
     platforms: [
         .iOS(.v16),
     ],
     products: [
         .library(
-            name: "MobileAnalytics",
-            targets: ["MobileAnalytics"]
+            name: "Astronaut",
+            targets: ["Astronaut"]
         ),
     ],
     targets: [
         .target(
-            name: "MobileAnalytics"
+            name: "Astronaut"
         ),
     ]
 )

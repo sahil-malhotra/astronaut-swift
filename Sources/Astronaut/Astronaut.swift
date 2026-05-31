@@ -4,7 +4,7 @@ import UserNotifications
 import UIKit
 #endif
 
-public struct MobileAnalyticsConfiguration {
+public struct AstronautConfiguration {
     public let baseURL: URL
     /// When nil, derived from build: `debug` in DEBUG, otherwise `release`.
     public let releaseEnvironment: String?
@@ -19,15 +19,15 @@ public struct MobileAnalyticsConfiguration {
         self.releaseEnvironment = releaseEnvironment
     }
 
-    public static let production = MobileAnalyticsConfiguration(
+    public static let production = AstronautConfiguration(
         // Canonical domain — the apex astronaut.sh 308-redirects here.
         baseURL: URL(string: "https://www.astronaut.sh")!,
         trackingId: "trk_1c4deffa9408427985d893d07041d620"
     )
 }
 
-public final class MobileAnalytics {
-    public static let shared = MobileAnalytics()
+public final class Astronaut {
+    public static let shared = Astronaut()
 
     private let clickIdKey = "ma_click_id"
     private let sourceKey = "ma_source"
@@ -35,7 +35,7 @@ public final class MobileAnalytics {
     private let hasSentFirstAppOpenKey = "ma_has_sent_first_app_open"
     private let defaults = UserDefaults.standard
 
-    private var configuration: MobileAnalyticsConfiguration?
+    private var configuration: AstronautConfiguration?
     private var deviceId: String
     private let foregroundPresenter = ForegroundNotificationPresenter()
 
@@ -49,7 +49,7 @@ public final class MobileAnalytics {
         }
     }
 
-    public func configure(_ configuration: MobileAnalyticsConfiguration) {
+    public func configure(_ configuration: AstronautConfiguration) {
         self.configuration = configuration
     }
 
