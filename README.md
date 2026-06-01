@@ -9,7 +9,7 @@ In Xcode: **File → Add Package Dependencies…** and enter the repository URL,
 add to your `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/sahil-malhotra/astronaut-swift.git", from: "1.0.0")
+.package(url: "https://github.com/sahil-malhotra/astronaut-swift.git", from: "1.0.1")
 ```
 
 ## Usage
@@ -22,10 +22,7 @@ import Astronaut
 
 // In your App init / AppDelegate didFinishLaunching:
 Astronaut.shared.configure(
-    AstronautConfiguration(
-        baseURL: URL(string: "https://www.astronaut.sh")!,
-        trackingId: "trk_xxxxxxxxxxxxxxxx"
-    )
+    AstronautConfiguration(trackingId: "trk_xxxxxxxxxxxxxxxx")
 )
 
 Astronaut.shared.trackAppOpen()
