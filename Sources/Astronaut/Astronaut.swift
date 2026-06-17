@@ -13,7 +13,9 @@ public struct AstronautConfiguration {
     /// it's how the backend attributes your events to your app.
     public let trackingId: String
 
-    /// When nil, derived from build: `debug` in DEBUG, otherwise `release`.
+    /// When nil, derived from the build: `debug` in DEBUG; otherwise `sandbox`
+    /// when the App Store receipt is a sandbox receipt (TestFlight / App Review),
+    /// else `release` (the live App Store). Set explicitly to override.
     public let releaseEnvironment: String?
 
     public init(trackingId: String, releaseEnvironment: String? = nil) {
@@ -214,7 +216,17 @@ public final class Astronaut {
             #if DEBUG
             releaseEnvironment = "debug"
             #else
-            releaseEnvironment = "release"
+            // Non-debug builds split by App Store receipt: a *production* receipt
+            // is the live App Store ("release"); a *sandbox* receipt means the
+            // build runs against Apple's sandbox — i.e. TestFlight or an App
+            // Review install — so bucket those as "sandbox". Apple Review can't be
+            // told apart from TestFlight here (both carry a sandbox receipt), but
+            // this keeps reviewer/beta traffic out of your production numbers.
+            if Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt" {
+                releaseEnvironment = "sandbox"
+            } else {
+                releaseEnvironment = "release"
+            }
             #endif
         }
         payload["release_environment"] = releaseEnvironment
