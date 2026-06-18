@@ -27,6 +27,13 @@ public struct AstronautConfiguration {
 public final class Astronaut {
     public static let shared = Astronaut()
 
+    /// ISO 8601 with millisecond fractional seconds (UTC), for `event_time`.
+    private static let iso8601Millis: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+
     private let clickIdKey = "ma_click_id"
     private let sourceKey = "ma_source"
     /// Bumped when first-open semantics changed; avoids a stale `true` from older builds.
@@ -201,6 +208,10 @@ public final class Astronaut {
             "device_id": deviceId,
             "metadata": metadata,
             "tracking_id": configuration.trackingId,
+            // Occurrence time, stamped now (ms, UTC). The backend records this as
+            // the event time and stamps its own received_at separately; if this
+            // is missing/invalid it falls back to the server receipt time.
+            "event_time": Self.iso8601Millis.string(from: Date()),
         ]
 
         if let region = Locale.current.region?.identifier, !region.isEmpty {
