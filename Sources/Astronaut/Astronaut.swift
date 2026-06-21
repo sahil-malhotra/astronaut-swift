@@ -90,6 +90,40 @@ public final class Astronaut {
         )
     }
 
+    /// Associates a real end-user identity with this device so the dashboard can
+    /// show a name/email on the user journey instead of an anonymous handle.
+    /// Call it once you know who the user is (e.g. after sign-in). The latest
+    /// call wins. Only send identity you have a lawful basis to process.
+    public func identify(
+        appUserId: String? = nil,
+        email: String? = nil,
+        name: String? = nil,
+        traits: [String: String] = [:]
+    ) {
+        guard let configuration else { return }
+
+        var payload: [String: Any] = [
+            "device_id": deviceId,
+            "tracking_id": configuration.trackingId,
+            "traits": traits,
+        ]
+        if let appUserId, !appUserId.isEmpty { payload["app_user_id"] = appUserId }
+        if let email, !email.isEmpty { payload["email"] = email }
+        if let name, !name.isEmpty { payload["name"] = name }
+
+        guard let body = try? JSONSerialization.data(withJSONObject: payload) else {
+            return
+        }
+
+        var request = URLRequest(
+            url: AstronautConfiguration.baseURL.appendingPathComponent("/api/identify")
+        )
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = body
+        URLSession.shared.dataTask(with: request).resume()
+    }
+
     /// Prompts for notification permission and, once granted, registers with
     /// APNs. The resulting device token is delivered to the app delegate's
     /// `didRegisterForRemoteNotificationsWithDeviceToken`, which should forward it
