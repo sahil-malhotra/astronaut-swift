@@ -241,6 +241,13 @@ public final class Astronaut {
 
         payload["timezone"] = TimeZone.current.identifier
 
+        // App's marketing version (CFBundleShortVersionString, e.g. "2.3.1") so
+        // events can be segmented/debugged by release.
+        if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+           !appVersion.isEmpty {
+            payload["app_version"] = appVersion
+        }
+
         let releaseEnvironment: String
         if let custom = configuration.releaseEnvironment, !custom.isEmpty {
             releaseEnvironment = custom
