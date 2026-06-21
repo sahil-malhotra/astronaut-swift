@@ -58,7 +58,7 @@ public final class Astronaut {
         self.configuration = configuration
     }
 
-    public func trackAppOpen(appUserId: String? = nil) {
+    public func trackAppOpen() {
         let isFirstOpen: Bool
         if defaults.bool(forKey: hasSentFirstAppOpenKey) {
             isFirstOpen = false
@@ -69,7 +69,6 @@ public final class Astronaut {
 
         send(
             eventType: "app_open",
-            appUserId: appUserId,
             metadata: ["platform": "ios"],
             isFirstOpen: isFirstOpen
         )
@@ -78,12 +77,10 @@ public final class Astronaut {
     public func trackPurchase(
         revenue: Double,
         currency: String,
-        appUserId: String? = nil,
         metadata: [String: String] = [:]
     ) {
         send(
             eventType: "purchase",
-            appUserId: appUserId,
             metadata: metadata,
             revenue: revenue,
             currency: currency
@@ -95,7 +92,6 @@ public final class Astronaut {
     /// Call it once you know who the user is (e.g. after sign-in). The latest
     /// call wins. Only send identity you have a lawful basis to process.
     public func identify(
-        appUserId: String? = nil,
         email: String? = nil,
         name: String? = nil,
         traits: [String: String] = [:]
@@ -107,7 +103,6 @@ public final class Astronaut {
             "tracking_id": configuration.trackingId,
             "traits": traits,
         ]
-        if let appUserId, !appUserId.isEmpty { payload["app_user_id"] = appUserId }
         if let email, !email.isEmpty { payload["email"] = email }
         if let name, !name.isEmpty { payload["name"] = name }
 
@@ -148,14 +143,12 @@ public final class Astronaut {
     /// `didRegisterForRemoteNotificationsWithDeviceToken`. Resolves the current
     /// authorization status and stores the token.
     public func handleRemoteNotificationRegistration(
-        deviceToken: Data,
-        appUserId: String? = nil
+        deviceToken: Data
     ) {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             self.registerPushToken(
                 deviceToken: deviceToken,
-                permissionStatus: Self.permissionStatusString(settings.authorizationStatus),
-                appUserId: appUserId
+                permissionStatus: Self.permissionStatusString(settings.authorizationStatus)
             )
         }
     }
@@ -179,8 +172,7 @@ public final class Astronaut {
     /// authorized / provisional / ephemeral / denied / not_determined.
     public func registerPushToken(
         deviceToken: Data,
-        permissionStatus: String,
-        appUserId: String? = nil
+        permissionStatus: String
     ) {
         guard let configuration else {
             return
@@ -205,10 +197,6 @@ public final class Astronaut {
             "tracking_id": configuration.trackingId,
         ]
 
-        if let appUserId, !appUserId.isEmpty {
-            payload["app_user_id"] = appUserId
-        }
-
         guard let body = try? JSONSerialization.data(withJSONObject: payload) else {
             return
         }
@@ -225,7 +213,6 @@ public final class Astronaut {
 
     public func send(
         eventType: String,
-        appUserId: String?,
         metadata: [String: String],
         revenue: Double? = nil,
         currency: String? = nil,
@@ -282,10 +269,6 @@ public final class Astronaut {
 
         if let source = defaults.string(forKey: sourceKey), !source.isEmpty {
             payload["source"] = source
-        }
-
-        if let appUserId, !appUserId.isEmpty {
-            payload["app_user_id"] = appUserId
         }
 
         if let revenue {
